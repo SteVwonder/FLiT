@@ -61,7 +61,7 @@ def slurmWait(user, host, pw, jobn):
     try:
         while user in check_output(['sshpass', '-e', *SSHL,
                                     user + '@' + host,
-                                    'squeue -j ' + jobn],
+                                    'bash -l -c "squeue -j ' + jobn + '"'],
                                    env=envir).decode("utf-8"):
             print('.')
             time.sleep(10)
@@ -136,7 +136,7 @@ print(check_output('tar zcf ' + home_dir + '/dbPy.tgz *',
 os.chdir(home_dir)
 new_env = os.environ.copy()
 new_env['SSHPASS'] = pwds[db_host[0] + '@' + db_host[1]]
-print(check_output('sshpass ' + SCPS + home_dir + '/dbPy.tgz ' +
+print(check_output('sshpass -e ' + SCPS + home_dir + '/dbPy.tgz ' +
                    db_host[0] + '@' + db_host[1] + ':', shell=True,
                    env=new_env).
       decode("utf-8"))
@@ -191,11 +191,11 @@ for host in zip(run_hosts, package_dirs):
         cleanc = None #DELME
         #cleanc = ('ssh {0}@{1} "rm -fr ' + host[1] + '"')
     else:
-        cmd = (SSHS + ' {0}@{1} "cd ' + host[1] + ' && ' +
+        cmd = (SSHS + ' {0}@{1} \'bash -l -c "cd ' + host[1] + ' && ' +
                'tar xf flit.tgz scripts/' + host[0][3] + ' && ' +
                'cd .. && ' +
-               'export PDIR=' + host[1] + ' {3} sbatch ' +
-               host[1] + '/scripts/' + host[0][3] + '"')
+               'export PDIR=' + host[1] + '; {3} sbatch ' +
+               host[1] + '/scripts/' + host[0][3] + '"\'')
         copyc = None
         cleanc = None
     cmds.append(cmd)
